@@ -1,4 +1,14 @@
-h2 Alla matcher visas här
+h1 Match Fixtures
 
-/ alla matcher visas, man väljer en match och går visare till en 
-/ny sida där endast den matchen visas och man kan betta
+table
+  thead
+    tr
+      th Game ID
+      th Team 1 ID
+      th Team 2 ID
+  tbody
+    - @games.each do |game|
+      tr
+        td = game['id']
+        td = game['team_id1']
+        td = game['team_id2']

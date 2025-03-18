@@ -1,0 +1,16 @@
+h1 Table Data
+
+table
+  thead
+    tr
+      - if @data.any?
+        - @data.first.keys.each do |column|
+          th = column
+  tbody
+    - @data.each do |row|
+      tr
+        - row.values.each do |value|
+          td = value
+
+/ alla matcher visas, man väljer en match och går visare till en 
+/ny sida där endast den matchen visas och man kan betta
