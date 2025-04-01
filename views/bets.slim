@@ -1,0 +1,10 @@
+h2 Place Your Bet
+
+p Select the outcome of the match between #{@game["team1_name"]} and #{@game["team2_name"]}:
+
+form action="/place_bet" method="post"
+  input type="hidden" name="game_id" value=@game["id"]
+
+  button type="submit" name="bet" value="draw" Draw
+  button type="submit" name="bet" value="team1" = @game["team1_name"]
+  button type="submit" name="bet" value="team2" = @game["team2_name"]

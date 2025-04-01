@@ -1,14 +1,22 @@
-h1 Match Fixtures
+h2 Games
 
 table
-  thead
+  tr
+    th Team 1
+    th Team 2
+    th Action
+  - @games.each do |game|
+    - team1 = DB.execute("SELECT name FROM teams WHERE id = ?", game["team_id1"]).first["name"] rescue "Unknown"
+    - team2 = DB.execute("SELECT name FROM teams WHERE id = ?", game["team_id2"]).first["name"] rescue "Unknown"
     tr
-      th Game ID
-      th Team 1 ID
-      th Team 2 ID
-  tbody
-    - @games.each do |game|
-      tr
-        td = game['id']
-        td = game['team_id1']
-        td = game['team_id2']
+      td = team1
+      td = team2
+      td
+        form action="/bets/#{game["id"]}" method="get"
+          button type="submit" Bet on this game
+
+form action="/shuffle_teams" method="post"
+  button type="submit" Shuffle Teams
+
+ 
+
