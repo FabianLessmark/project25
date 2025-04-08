@@ -1,0 +1,15 @@
+h1 Log in
+
+- if @error
+  p style="color:red"= @error
+
+form method="post" action="/login"
+  label Username:
+  input type="text" name="username" *
+  br
+  label Password:
+  input type="password" name="password" *
+  br
+  button type="submit" Log in
+  br
+  a href="/register" Create account 

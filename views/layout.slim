@@ -1,18 +1,30 @@
-<!DOCTYPE html>
+doctype html
 html lang="en"
-    head
-        meta charset="UTF-8"/
-        meta name="viewport" content="width=device-width, initial-scale=1.0"/
-        title Document
-        
-    body 
-
-        nav  
-            a href="/" Start  
-            a href="/teams" Alla Lag
-            a href="/account" Kolla ditt saldo samt statistik 
-            a href="/games" Alla Matcher 
+  head
+    meta charset="UTF-8"
+    meta name="viewport" content="width=device-width, initial-scale=1.0"
+    title Document
+  body
+    - if session[:user_id]
+        div style="text-align: right; margin: 10px; font-weight: bold;"
+        | Your saldo: #{session[:saldo]}
 
 
 
-        ==yield 
+    - unless ["/login", "/register"].include?(request.path_info)
+      nav
+        - if session[:user_id]
+          a href="/" Start  
+          a href="/teams" Alla Lag
+          a href="/account" Kolla ditt saldo samt statistik 
+          a href="/games" Alla Matcher 
+          - if session[:access] == "admin"
+            a href="/admin/users" Hantera användare
+          |
+          span Inloggad som: #{session[:access]} (#{session[:username]})
+          form method="get" action="/logout" style="display:inline; margin-left: 10px;"
+            button type="submit" Logga ut
+        - else
+          a href="/login" Logga in
+
+    ==yield

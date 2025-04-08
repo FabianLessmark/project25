@@ -15,8 +15,9 @@ table
         form action="/bets/#{game["id"]}" method="get"
           button type="submit" Bet on this game
 
-form action="/shuffle_teams" method="post"
-  button type="submit" Shuffle Teams
+- if session[:access] == "admin"
+  form method="post" action="/shuffle_teams"
+    button type="submit" Shuffle Teams
 
  
 

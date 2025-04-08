@@ -1,0 +1,21 @@
+h1 Manage users
+
+table
+  thead
+    tr
+      th ID
+      th Username
+      th Access
+      th Delete
+  tbody
+    - @users.each do |user|
+      tr
+        td= user["id"]
+        td= user["username"]
+        td= user["access"]
+        td
+          - if user["id"] != session[:user_id] 
+            form method="post" action="/admin/users/delete/#{user["id"]}" style="display:inline"
+              button type="submit" onclick="return confirm('Är du säker på att du vill radera användaren?')" Delete
+          - else
+            | (You)
