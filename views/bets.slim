@@ -1,10 +1,18 @@
 h2 Place Your Bet
 
+- if @error
+  div class="error" style="color: red; font-weight: bold;"
+    | #{@error}
+
 p Select the outcome of the match between #{@game["team1_name"]} and #{@game["team2_name"]}:
 
 form action="/place_bet" method="post"
   input type="hidden" name="game_id" value=@game["id"]
 
+  label for="bet_amount" Bet Amount (0-20):
+  input type="number" id="bet_amount" name="bet_amount" min="0" max="20" required
+
+  br
   button type="submit" name="bet" value="draw" Draw
   button type="submit" name="bet" value="team1" = @game["team1_name"]
   button type="submit" name="bet" value="team2" = @game["team2_name"]

@@ -4,27 +4,27 @@ html lang="en"
     meta charset="UTF-8"
     meta name="viewport" content="width=device-width, initial-scale=1.0"
     title Document
+    
+
   body
     - if session[:user_id]
-        div style="text-align: right; margin: 10px; font-weight: bold;"
-        | Your saldo: #{session[:saldo]}
-
-
+      div 
+        p style="text-align: right; margin: 10px; font-weight: bold;" Your saldo: #{session[:saldo]}
 
     - unless ["/login", "/register"].include?(request.path_info)
-      nav
+      nav 
         - if session[:user_id]
-          a href="/" Start  
-          a href="/teams" Alla Lag
-          a href="/account" Kolla ditt saldo samt statistik 
-          a href="/games" Alla Matcher 
+          a style="margin-right: 30px;" href="/" Start  
+          a style="margin-right: 30px;" href="/teams" Teams
+          a style="margin-right: 30px;" href="/account" Check your history and statistics
+          a style="margin-right: 30px;" href="/games" Bet on games
           - if session[:access] == "admin"
-            a href="/admin/users" Hantera användare
+            a style="margin-right: 30px;" href="/admin/users" Manage users
           |
-          span Inloggad som: #{session[:access]} (#{session[:username]})
+          span Logged in as: #{session[:access]} (#{session[:username]})
           form method="get" action="/logout" style="display:inline; margin-left: 10px;"
-            button type="submit" Logga ut
+            button type="submit" Log out
         - else
-          a href="/login" Logga in
+          a href="/login" Log in
 
     ==yield

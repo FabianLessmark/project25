@@ -16,6 +16,6 @@ table
         td
           - if user["id"] != session[:user_id] 
             form method="post" action="/admin/users/delete/#{user["id"]}" style="display:inline"
-              button type="submit" onclick="return confirm('Är du säker på att du vill radera användaren?')" Delete
+              button type="submit" onclick="return confirm('Are you sure you want to delete the user?')" Delete
           - else
             | (You)
