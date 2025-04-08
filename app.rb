@@ -67,7 +67,7 @@ def generate_games
   if team_ids.size < 16
     puts "Not enough teams to generate 8 games!" 
   else
-    DB.execute("DELETE FROM games") # Rensar tidigare matcher
+    DB.execute("DELETE FROM games") 
 
     8.times do
       break if team_ids.size < 2
@@ -106,9 +106,8 @@ end
 get('/bets/:game_id') do
   @game = DB.execute("SELECT games.id, teams1.name AS team1_name, teams2.name AS team2_name FROM games JOIN teams AS teams1 ON games.team_id1 = teams1.id JOIN teams AS teams2 ON games.team_id2 = teams2.id WHERE games.id = ?", params[:game_id]).first
   
-  # Om spelet inte hittas, kan du omdirigera eller visa ett felmeddelande
   if @game.nil?
-    redirect('/games')  # Eller annan passande sida
+    redirect('/games')  
   else
     slim(:bets)
     end
@@ -141,18 +140,18 @@ post('/place_bet') do
     slim(:bets)
 
   else
-    # Spara bettet i databasen
+
     DB.execute("INSERT INTO bets (user_id, game_id, bet_amount, bet_outcome) VALUES (?, ?, ?, ?)", [user_id, game_id, bet_amount, bet_outcome])
 
-    # Slumpa om användaren vinner (1/3 chans)
+
     if rand(3) == 0
-      # VINST: användaren får 3x bet_amount tillagt
+
       win_amount = bet_amount * 3
       DB.execute("UPDATE user SET saldo = saldo + ? WHERE id = ?", [win_amount, user_id])
       session[:saldo] = user_balance + win_amount
       session[:message] = "🎉 You WON! You gained #{win_amount} coins!"
     else
-      # FÖRLUST: bet_amount dras
+
       DB.execute("UPDATE user SET saldo = saldo - ? WHERE id = ?", [bet_amount, user_id])
       session[:saldo] = user_balance - bet_amount
       session[:message] = "❌ You lost your bet of #{bet_amount} coins."
