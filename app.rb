@@ -111,7 +111,7 @@ get('/bets/:game_id') do
     redirect('/games')  # Eller annan passande sida
   else
     slim(:bets)
-  end
+    end
 end
 
 
