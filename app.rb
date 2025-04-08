@@ -121,17 +121,15 @@ post('/place_bet') do
   bet_outcome = params[:bet]
   user_id = session[:user_id]
 
-  # Hämta användarens saldo från databasen
   user_balance = DB.execute("SELECT saldo FROM user WHERE id = ?", user_id).first["saldo"]
 
-  # 🔒 Kontrollera om användaren redan bettat på det här spelet
   existing_bet = DB.execute("SELECT * FROM bets WHERE user_id = ? AND game_id = ?", [user_id, game_id]).first
 
   if existing_bet
     @error = "You have already placed a bet on this game."
     @game = DB.execute("SELECT games.id, teams1.name AS team1_name, teams2.name AS team2_name FROM games JOIN teams AS teams1 ON games.team_id1 = teams1.id JOIN teams AS teams2 ON games.team_id2 = teams2.id WHERE games.id = ?", game_id).first
     slim(:bets)
-  
+
   elsif bet_amount < 0 || bet_amount > 20
     @error = "Bet amount must be between 0 and 20."
     @game = DB.execute("SELECT games.id, teams1.name AS team1_name, teams2.name AS team2_name FROM games JOIN teams AS teams1 ON games.team_id1 = teams1.id JOIN teams AS teams2 ON games.team_id2 = teams2.id WHERE games.id = ?", game_id).first
@@ -143,19 +141,27 @@ post('/place_bet') do
     slim(:bets)
 
   else
-    # Dra av betbeloppet från saldot
-    DB.execute("UPDATE user SET saldo = saldo - ? WHERE id = ?", [bet_amount, user_id])
-
-    # Logga bettet
+    # Spara bettet i databasen
     DB.execute("INSERT INTO bets (user_id, game_id, bet_amount, bet_outcome) VALUES (?, ?, ?, ?)", [user_id, game_id, bet_amount, bet_outcome])
 
-    # Uppdatera saldo i session
-    new_balance = user_balance - bet_amount
-    session[:saldo] = new_balance
+    # Slumpa om användaren vinner (1/3 chans)
+    if rand(3) == 0
+      # VINST: användaren får 3x bet_amount tillagt
+      win_amount = bet_amount * 3
+      DB.execute("UPDATE user SET saldo = saldo + ? WHERE id = ?", [win_amount, user_id])
+      session[:saldo] = user_balance + win_amount
+      session[:message] = "🎉 You WON! You gained #{win_amount} coins!"
+    else
+      # FÖRLUST: bet_amount dras
+      DB.execute("UPDATE user SET saldo = saldo - ? WHERE id = ?", [bet_amount, user_id])
+      session[:saldo] = user_balance - bet_amount
+      session[:message] = "❌ You lost your bet of #{bet_amount} coins."
+    end
 
     redirect '/games'
   end
 end
+
 get('/admin/users') do
   redirect('/') unless session[:access] == "admin"
   @users = DB.execute("SELECT * FROM user")

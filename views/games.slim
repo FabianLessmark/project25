@@ -1,5 +1,10 @@
 h2 Games
 
+- if session[:message]
+  div style="padding: 10px; background-color: #e0ffe0; border: 1px solid #66cc66; margin-bottom: 20px; border-radius: 5px; font-weight: bold;"
+    = session[:message]
+  - session[:message] = nil
+
 table
   tr
     th Team 1
