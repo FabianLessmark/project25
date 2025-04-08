@@ -119,34 +119,43 @@ post('/place_bet') do
   game_id = params[:game_id]
   bet_amount = params[:bet_amount].to_i
   bet_outcome = params[:bet]
+  user_id = session[:user_id]
 
-  if bet_amount < 0 || bet_amount > 20
-    @error = "Bet amount must be between 0 and 20."
+  # Hämta användarens saldo från databasen
+  user_balance = DB.execute("SELECT saldo FROM user WHERE id = ?", user_id).first["saldo"]
+
+  # 🔒 Kontrollera om användaren redan bettat på det här spelet
+  existing_bet = DB.execute("SELECT * FROM bets WHERE user_id = ? AND game_id = ?", [user_id, game_id]).first
+
+  if existing_bet
+    @error = "You have already placed a bet on this game."
+    @game = DB.execute("SELECT games.id, teams1.name AS team1_name, teams2.name AS team2_name FROM games JOIN teams AS teams1 ON games.team_id1 = teams1.id JOIN teams AS teams2 ON games.team_id2 = teams2.id WHERE games.id = ?", game_id).first
     slim(:bets)
+  
+  elsif bet_amount < 0 || bet_amount > 20
+    @error = "Bet amount must be between 0 and 20."
+    @game = DB.execute("SELECT games.id, teams1.name AS team1_name, teams2.name AS team2_name FROM games JOIN teams AS teams1 ON games.team_id1 = teams1.id JOIN teams AS teams2 ON games.team_id2 = teams2.id WHERE games.id = ?", game_id).first
+    slim(:bets)
+
+  elsif user_balance < bet_amount
+    @error = "Exceeding your balance. You have #{user_balance} in your account."
+    @game = DB.execute("SELECT games.id, teams1.name AS team1_name, teams2.name AS team2_name FROM games JOIN teams AS teams1 ON games.team_id1 = teams1.id JOIN teams AS teams2 ON games.team_id2 = teams2.id WHERE games.id = ?", game_id).first
+    slim(:bets)
+
   else
-    user_id = session[:user_id]
-    user_balance = DB.execute("SELECT saldo FROM user WHERE id = ?", user_id).first["saldo"]
+    # Dra av betbeloppet från saldot
+    DB.execute("UPDATE user SET saldo = saldo - ? WHERE id = ?", [bet_amount, user_id])
 
-    if user_balance < bet_amount
-      @error = "Exceeding your balance. You have #{user_balance} in your account."
-      slim(:bets)  # Visa felmeddelande och återgå till bettsidan
-    else
-      # Dra av bettbeloppet från saldot
-      DB.execute("UPDATE user SET saldo = saldo - ? WHERE id = ?", [bet_amount, user_id])
+    # Logga bettet
+    DB.execute("INSERT INTO bets (user_id, game_id, bet_amount, bet_outcome) VALUES (?, ?, ?, ?)", [user_id, game_id, bet_amount, bet_outcome])
 
-      # Logik för att registrera bettet
-      DB.execute("INSERT INTO bets (user_id, game_id, bet_amount, bet_outcome) VALUES (?, ?, ?, ?)", 
-                 [user_id, game_id, bet_amount, bet_outcome])
+    # Uppdatera saldo i session
+    new_balance = user_balance - bet_amount
+    session[:saldo] = new_balance
 
-      # Uppdatera sessionen med det nya saldot
-      new_balance = user_balance - bet_amount
-      session[:saldo] = new_balance
-
-      redirect '/games'  # Eller någon annan sida där du vill visa resultatet
-    end
+    redirect '/games'
   end
 end
-
 get('/admin/users') do
   redirect('/') unless session[:access] == "admin"
   @users = DB.execute("SELECT * FROM user")
